@@ -34,7 +34,7 @@ target_compile_options(mensura_gui PRIVATE -Wall -Wextra)
 create_fooyin_plugin(
     mensura
     NO_INSTALL
-    DEPENDS mensura_logic Fooyin::Core
-    SOURCES mensuraplugin.cpp mensuraplugin.h
+    DEPENDS mensura_logic mensura_gui Fooyin::Core Fooyin::Gui Fooyin::Utils
+    SOURCES mensuraplugin.cpp mensuraplugin.h mensurawindow.cpp mensurawindow.h
 )
 install(TARGETS mensura LIBRARY DESTINATION ${MENSURA_PLUGIN_DIR})
