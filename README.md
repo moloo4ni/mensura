@@ -44,5 +44,10 @@ If the window shows a warning that Mensura is not in the DSP chain, add the node
 
 ## Limitations
 
-- During a crossfade both tracks' clicks are audible for its duration.
+- During a crossfade both tracks' clicks are audible for its duration. After the switch the outgoing track
+  clicks with the new track's tempo and phase, so two grids that do not line up can overlap until the fade ends.
+- In gapless playback the first ~0.1–0.3 s of the next track may be clicked with the previous track's tempo and
+  phase, because that audio is already processed before the track change reaches the plugin.
+- Put Mensura first in the per-track chain, before any tempo, speed or resampling DSP. After such a DSP the audio
+  no longer matches the track time, and the clicks may come out cut off.
 - There is no beat detection: without a BPM tag, set the tempo and phase by hand or with TAP.
