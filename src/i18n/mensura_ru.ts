@@ -20,8 +20,8 @@
     </message>
     <message>
         <location filename="../mensurapanel.cpp" line="49"/>
-        <source>⚠ Mensura is not in the DSP chain. Add it in Settings → DSP → Per-track.</source>
-        <translation>⚠ Mensura не добавлена в DSP-цепочку. Добавьте её в Настройки → DSP → Per-track.</translation>
+        <source>⚠ Mensura is not in the DSP chain. Add it in Settings → Playback → DSP Manager → Per-Track DSPs.</source>
+        <translation>⚠ Mensura не добавлена в DSP-цепочку. Добавьте её в Настройки → Воспроизведение → Менеджер DSP → DSP для каждой дорожки.</translation>
     </message>
     <message>
         <location filename="../mensurapanel.cpp" line="80"/>

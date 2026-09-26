@@ -46,7 +46,7 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     , m_volumeLabel{new QLabel(this)}
     , m_offset{new QSpinBox(this)}
     , m_resetPhase{new QPushButton(tr("Reset"), this)}
-    , m_warning{new QLabel(tr("⚠ Mensura is not in the DSP chain. Add it in Settings → DSP → Per-track."), this)}
+    , m_warning{new QLabel(tr("⚠ Mensura is not in the DSP chain. Add it in Settings → Playback → DSP Manager → Per-Track DSPs."), this)}
     , m_timer{new QTimer(this)}
 {
     m_enabled->setObjectName(u"enabled"_s);

@@ -22,8 +22,8 @@ The plugin is installed to `~/.local/lib/fooyin/plugins/fyplugin_mensura.so`
 
 ## Setup
 
-1. **Settings → DSP**: add **Mensura** to the **per-track** chain. (In the per-track chain the clicks
-   follow the track through crossfades.)
+1. **Settings → Playback → DSP Manager**: add **Mensura** to the **Per-Track DSPs** chain.
+   (In the per-track chain the clicks follow the track through crossfades.)
 2. **View → Mensura** opens the control window. The metronome keeps working when the window is closed.
 
 ## Controls
