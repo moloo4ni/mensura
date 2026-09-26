@@ -1,5 +1,6 @@
 add_library(mensura_logic STATIC)
 target_sources(mensura_logic PRIVATE mensuradsp.cpp mensuradsp.h)
+target_sources(mensura_logic PRIVATE mensuraparams.h beatgrid.cpp beatgrid.h)
 set_target_properties(
     mensura_logic
     PROPERTIES POSITION_INDEPENDENT_CODE ON

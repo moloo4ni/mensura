@@ -7,3 +7,4 @@ function(mensura_add_test name)
 endfunction()
 
 mensura_add_test(tst_mensuradsp)
+mensura_add_test(tst_beatgrid)
