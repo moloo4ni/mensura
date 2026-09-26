@@ -10,6 +10,7 @@
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QHBoxLayout>
+#include <QKeyEvent>
 #include <QLabel>
 #include <QPushButton>
 #include <QShortcut>
@@ -66,7 +67,12 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_bpm->setKeyboardTracking(false);
     m_bpm->setPrefix(u"♩ "_s);
     QFont bpmFont = m_bpm->font();
-    bpmFont.setPointSizeF(bpmFont.pointSizeF() * 1.5);
+    if(bpmFont.pointSizeF() > 0) {
+        bpmFont.setPointSizeF(bpmFont.pointSizeF() * 1.5);
+    }
+    else {
+        bpmFont.setPixelSize(bpmFont.pixelSize() * 3 / 2);
+    }
     m_bpm->setFont(bpmFont);
 
     m_mode->addItem(tr("Auto"));   // BpmMode::Auto
@@ -133,10 +139,14 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
 
     auto* tapShortcut = new QShortcut(QKeySequence{Qt::Key_T}, this);
     tapShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    tapShortcut->setAutoRepeat(false);
+    // Spin boxes claim printable keys as shortcut overrides; T is never valid input there
+    m_bpm->installEventFilter(this);
+    m_offset->installEventFilter(this);
     connect(tapShortcut, &QShortcut::activated, this, &MensuraPanel::tap);
 
     connect(m_controller, &MensuraController::stateChanged, this, &MensuraPanel::refresh);
-    connect(m_controller, &MensuraController::nodeMissingChanged, m_warning, &QWidget::setVisible);
+    connect(m_controller, &MensuraController::nodeMissingChanged, this, &MensuraPanel::refresh);
 
     m_timer->setInterval(IndicatorIntervalMs);
     connect(m_timer, &QTimer::timeout, this, [this] { updateIndicator(SharedState::nowNs()); });
@@ -180,6 +190,7 @@ void MensuraPanel::refresh()
     m_tap->setEnabled(m_controller->isPlaying());
     m_indicator->setBeatCount(config.beatsPerBar);
     m_warning->setVisible(m_controller->nodeMissing());
+    updateTimer();
 }
 
 void MensuraPanel::updateIndicator(int64_t nowNs)
@@ -193,16 +204,41 @@ void MensuraPanel::updateIndicator(int64_t nowNs)
     m_indicator->setCurrentBeat(grid.indexInBar(beat));
 }
 
+bool MensuraPanel::eventFilter(QObject* watched, QEvent* event)
+{
+    if(event->type() == QEvent::ShortcutOverride) {
+        const auto* keyEvent = static_cast<QKeyEvent*>(event);
+        if(keyEvent->key() == Qt::Key_T && keyEvent->modifiers() == Qt::NoModifier) {
+            event->ignore(); // not claimed by the spin box, so the T shortcut fires
+            return true;
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
+
 void MensuraPanel::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
-    m_timer->start();
+    updateTimer();
 }
 
 void MensuraPanel::hideEvent(QHideEvent* event)
 {
-    m_timer->stop();
     QWidget::hideEvent(event);
+    updateTimer();
+}
+
+void MensuraPanel::updateTimer()
+{
+    if(isVisible() && m_controller->isPlaying()) {
+        if(!m_timer->isActive()) {
+            m_timer->start();
+        }
+    }
+    else {
+        m_timer->stop();
+        m_indicator->setCurrentBeat(-1);
+    }
 }
 
 void MensuraPanel::tap()

@@ -9,8 +9,10 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSlider>
+#include <QSignalSpy>
 #include <QSpinBox>
 #include <QTest>
+#include <QTimer>
 
 #include <cstdlib>
 
@@ -39,6 +41,8 @@ private slots:
     void controlsDriveController();
     void tapEnabledOnlyWhilePlaying();
     void tapButtonTaps();
+    void tapKeyWorksFromSpinBoxes();
+    void timerRunsOnlyWhileVisibleAndPlaying();
     void warningFollowsNodeMissing();
     void indicatorShowsCurrentBeat();
     void indicatorClampsBeatCount();
@@ -72,6 +76,7 @@ void TestMensuraPanel::showsControllerState()
 
     controller.handleTrackChanged(std::nullopt, 0); // stateChanged -> refresh
     QCOMPARE(child<QDoubleSpinBox>(panel, u"bpm"_s)->value(), 120.0);
+    QCOMPARE(controller.config().mode, BpmMode::Auto); // refresh must not feed back (setManualBpm)
     QCOMPARE(child<QLabel>(panel, u"source"_s)->text(), u"manual"_s);
 }
 
@@ -141,13 +146,67 @@ void TestMensuraPanel::tapButtonTaps()
     MensuraController controller{state};
     const MensuraPanel panel{&controller};
     controller.handleTrackChanged(std::nullopt, 0);
-    controller.handlePlayStateChanged(true, SharedState::nowNs());
+    const int64_t now = SharedState::nowNs();
+    controller.handlePlayStateChanged(true, now);
+    controller.handlePosition(5000, now);
+    QCOMPARE(controller.phaseNs(), 0);
+    QSignalSpy spy{&controller, &MensuraController::stateChanged};
 
     emit child<QPushButton>(panel, u"tap"_s)->pressed();
 
-    // One tap at the current position (≈ 0 ms): phase is that position
-    QVERIFY(std::abs(controller.phaseNs()) < 1'000 * Ms);
-    QVERIFY(controller.phaseNs() >= 0);
+    // One tap at the current position (≈ 5000 ms): the phase is that position
+    QCOMPARE(spy.count(), 1);
+    QVERIFY(controller.phaseNs() >= 5000 * Ms);
+    QVERIFY(controller.phaseNs() < 6000 * Ms);
+}
+
+void TestMensuraPanel::tapKeyWorksFromSpinBoxes()
+{
+    SharedState state;
+    MensuraController controller{state};
+    MensuraPanel panel{&controller};
+    controller.handleTrackChanged(std::nullopt, 0);
+    controller.handlePlayStateChanged(true, SharedState::nowNs());
+    panel.show();
+    panel.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&panel));
+
+    for(const QString& name : {u"bpm"_s, u"offset"_s}) {
+        auto* box = child<QAbstractSpinBox>(panel, name);
+        box->setFocus();
+        QVERIFY(box->hasFocus());
+        const QString textBefore = box->text();
+        QSignalSpy spy{&controller, &MensuraController::stateChanged};
+
+        QTest::keyClick(box, Qt::Key_T);
+
+        QCOMPARE(spy.count(), 1); // exactly one tap
+        QCOMPARE(box->text(), textBefore);
+    }
+}
+
+void TestMensuraPanel::timerRunsOnlyWhileVisibleAndPlaying()
+{
+    SharedState state;
+    MensuraController controller{state};
+    MensuraPanel panel{&controller};
+    auto* timer = panel.findChild<QTimer*>();
+    QVERIFY(timer);
+
+    panel.show();
+    QVERIFY(!timer->isActive()); // visible, paused
+
+    controller.handlePlayStateChanged(true, 0);
+    QVERIFY(timer->isActive()); // visible, playing
+
+    panel.hide();
+    QVERIFY(!timer->isActive()); // hidden, playing
+
+    panel.show();
+    QVERIFY(timer->isActive());
+    controller.handlePlayStateChanged(false, 100 * Ms);
+    QVERIFY(!timer->isActive()); // paused again
+    QCOMPARE(child<BeatIndicator>(panel, u"indicator"_s)->currentBeat(), -1);
 }
 
 void TestMensuraPanel::warningFollowsNodeMissing()

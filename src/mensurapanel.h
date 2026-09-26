@@ -29,11 +29,14 @@ public:
     void updateIndicator(int64_t nowNs);
 
 protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
     void showEvent(QShowEvent* event) override;
     void hideEvent(QHideEvent* event) override;
 
 private:
     void tap();
+    //! The indicator timer runs only while the panel is visible and playback is running.
+    void updateTimer();
 
     MensuraController* m_controller;
 
