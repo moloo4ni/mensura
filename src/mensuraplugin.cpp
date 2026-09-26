@@ -100,7 +100,14 @@ void MensuraPlugin::shutdown()
     if(m_controller) {
         saveConfig();
     }
-    delete m_window; // QPointer: no-op if fooyin already destroyed it
+    if(m_window) {
+        // FyWidget saves the geometry only in closeEvent, and a plain delete sends no close event.
+        // Qt 6 normally closes every window on quit(), but other exit paths (e.g. QCoreApplication::exit)
+        // do not, so close explicitly. WA_DeleteOnClose only schedules deleteLater, which never runs
+        // once the event loop is gone, so delete here too.
+        m_window->close();
+        delete m_window; // QPointer: no-op if the window is already gone
+    }
 }
 
 std::vector<DspNode::Entry> MensuraPlugin::dspCreators() const
