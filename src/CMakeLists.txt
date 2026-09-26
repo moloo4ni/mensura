@@ -19,6 +19,18 @@ target_link_libraries(mensura_logic PUBLIC Fooyin::Core Qt6::Core)
 target_compile_definitions(mensura_logic PUBLIC QT_USE_QSTRINGBUILDER)
 target_compile_options(mensura_logic PRIVATE -Wall -Wextra)
 
+add_library(mensura_gui STATIC)
+target_sources(mensura_gui PRIVATE beatindicator.cpp beatindicator.h mensurapanel.cpp mensurapanel.h)
+set_target_properties(
+    mensura_gui
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+               AUTOMOC ON
+               CXX_VISIBILITY_PRESET hidden
+               VISIBILITY_INLINES_HIDDEN ON
+)
+target_link_libraries(mensura_gui PUBLIC mensura_logic Qt6::Widgets)
+target_compile_options(mensura_gui PRIVATE -Wall -Wextra)
+
 create_fooyin_plugin(
     mensura
     NO_INSTALL
