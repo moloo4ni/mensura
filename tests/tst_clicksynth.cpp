@@ -1,0 +1,114 @@
+#include "clicksynth.h"
+
+#include <QTest>
+
+#include <algorithm>
+#include <cmath>
+
+using namespace Fooyin::Mensura;
+
+namespace {
+constexpr std::array AllSounds{ClickSound::Click, ClickSound::Wood, ClickSound::Beep};
+
+double peak(std::span<const double> samples)
+{
+    double result{0.0};
+    for(const double s : samples) {
+        result = std::max(result, std::abs(s));
+    }
+    return result;
+}
+
+int signChanges(std::span<const double> samples)
+{
+    int changes{0};
+    for(size_t i = 1; i < samples.size(); ++i) {
+        if((samples[i - 1] < 0.0) != (samples[i] < 0.0)) {
+            ++changes;
+        }
+    }
+    return changes;
+}
+} // namespace
+
+class TestClickSynth : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void lengthsMatchVoices();
+    void lengthScalesWithSampleRate();
+    void edgesAreSilent();
+    void peaksAreNormalised();
+    void accentIsHigherPitched();
+    void samplesAreFinite();
+    void outOfRangeSoundFallsBackToClick();
+};
+
+void TestClickSynth::lengthsMatchVoices()
+{
+    const ClickSynth synth{48000};
+    QCOMPARE(synth.sampleRate(), 48000);
+    for(const bool accent : {false, true}) {
+        QCOMPARE(synth.click(ClickSound::Click, accent).size(), size_t{1440});
+        QCOMPARE(synth.click(ClickSound::Wood, accent).size(), size_t{2400});
+        QCOMPARE(synth.click(ClickSound::Beep, accent).size(), size_t{2880});
+    }
+}
+
+void TestClickSynth::lengthScalesWithSampleRate()
+{
+    const ClickSynth synth{44100};
+    QCOMPARE(synth.click(ClickSound::Click, false).size(), size_t{1323});
+}
+
+void TestClickSynth::edgesAreSilent()
+{
+    const ClickSynth synth{48000};
+    for(const auto sound : AllSounds) {
+        for(const bool accent : {false, true}) {
+            const auto click = synth.click(sound, accent);
+            QCOMPARE(click.front(), 0.0);
+            QCOMPARE(click.back(), 0.0);
+        }
+    }
+}
+
+void TestClickSynth::peaksAreNormalised()
+{
+    const ClickSynth synth{48000};
+    for(const auto sound : AllSounds) {
+        QVERIFY(std::abs(peak(synth.click(sound, false)) - ClickSynth::NormalPeak) < 1e-9);
+        QVERIFY(std::abs(peak(synth.click(sound, true)) - ClickSynth::AccentPeak) < 1e-9);
+    }
+}
+
+void TestClickSynth::accentIsHigherPitched()
+{
+    const ClickSynth synth{48000};
+    for(const auto sound : AllSounds) {
+        QVERIFY(signChanges(synth.click(sound, true)) > signChanges(synth.click(sound, false)));
+    }
+}
+
+void TestClickSynth::samplesAreFinite()
+{
+    for(const int rate : {8000, 44100, 48000, 96000, 192000}) {
+        const ClickSynth synth{rate};
+        for(const auto sound : AllSounds) {
+            for(const bool accent : {false, true}) {
+                const auto click = synth.click(sound, accent);
+                QVERIFY(std::ranges::all_of(click, [](double s) { return std::isfinite(s); }));
+            }
+        }
+    }
+}
+
+void TestClickSynth::outOfRangeSoundFallsBackToClick()
+{
+    const ClickSynth synth{48000};
+    QCOMPARE(synth.click(static_cast<ClickSound>(7), false).data(), synth.click(ClickSound::Click, false).data());
+}
+
+QTEST_APPLESS_MAIN(TestClickSynth)
+#include "tst_clicksynth.moc"

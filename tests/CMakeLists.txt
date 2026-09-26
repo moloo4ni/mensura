@@ -8,3 +8,4 @@ endfunction()
 
 mensura_add_test(tst_mensuradsp)
 mensura_add_test(tst_beatgrid)
+mensura_add_test(tst_clicksynth)
