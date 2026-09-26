@@ -109,10 +109,18 @@ void MensuraPlugin::saveConfig()
 
 void MensuraPlugin::showWindow()
 {
-    if(!m_window) {
-        m_window = new MensuraWindow(m_controller);
+    if(m_window) {
+        // Already open: only bring it to the front. Calling showStandaloneWindow again on the
+        // same instance would re-apply the geometry saved at the last close.
+        m_window->setWindowState(m_window->windowState() & ~Qt::WindowMinimized);
+        m_window->show();
+        m_window->raise();
+        m_window->activateWindow();
+        return;
     }
-    // Shows the window, or raises it if it is already open
+    // fooyin sets WA_DeleteOnClose and saves the geometry in closeEvent, so a closed window is
+    // gone (the QPointer is null) and a new one restores the saved geometry here
+    m_window = new MensuraWindow(m_controller);
     m_window->showStandaloneWindow(tr("Mensura"), QString::fromLatin1(WindowStateKey), DefaultWindowSize);
 }
 } // namespace Fooyin::Mensura
