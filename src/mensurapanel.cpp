@@ -27,6 +27,8 @@ using namespace Qt::StringLiterals;
 namespace Fooyin::Mensura {
 namespace {
 constexpr int IndicatorIntervalMs = 16; // ~60 Hz
+// Half the displayed resolution (1 decimal): smaller differences look identical in the box
+constexpr double BpmDisplayTolerance = 0.05;
 }
 
 MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
@@ -170,7 +172,10 @@ void MensuraPanel::refresh()
 
     m_enabled->setChecked(config.enabled);
 
-    m_bpm->setValue(tempo.bpm);
+    // Writing an unchanged value would discard half-typed text (keyboard tracking is off)
+    if(std::abs(m_bpm->value() - tempo.bpm) >= BpmDisplayTolerance) {
+        m_bpm->setValue(tempo.bpm);
+    }
     QPalette bpmPalette = palette();
     if(fromTag) {
         bpmPalette.setColor(QPalette::Text, bpmPalette.color(QPalette::Disabled, QPalette::Text));
@@ -179,14 +184,18 @@ void MensuraPanel::refresh()
     m_source->setText(fromTag ? tr("tag") : tr("manual"));
 
     m_mode->setCurrentIndex(static_cast<int>(config.mode));
-    m_beats->setValue(config.beatsPerBar);
+    if(m_beats->value() != config.beatsPerBar) {
+        m_beats->setValue(config.beatsPerBar);
+    }
     m_sound->setCurrentIndex(static_cast<int>(config.sound));
 
     const auto volumeDb = static_cast<int>(std::lround(config.volumeDb));
     m_volume->setValue(volumeDb);
     m_volumeLabel->setText(tr("%1 dB").arg(volumeDb));
 
-    m_offset->setValue(config.phaseOffsetMs);
+    if(m_offset->value() != config.phaseOffsetMs) {
+        m_offset->setValue(config.phaseOffsetMs);
+    }
     m_tap->setEnabled(m_controller->isPlaying());
     m_indicator->setBeatCount(config.beatsPerBar);
     m_warning->setVisible(m_controller->nodeMissing());
@@ -219,18 +228,20 @@ bool MensuraPanel::eventFilter(QObject* watched, QEvent* event)
 void MensuraPanel::showEvent(QShowEvent* event)
 {
     QWidget::showEvent(event);
+    m_shown = true;
     updateTimer();
 }
 
 void MensuraPanel::hideEvent(QHideEvent* event)
 {
     QWidget::hideEvent(event);
+    m_shown = false; // also for spontaneous hides (minimise), where isVisible() stays true
     updateTimer();
 }
 
 void MensuraPanel::updateTimer()
 {
-    if(isVisible() && m_controller->isPlaying()) {
+    if(m_shown && m_controller->isPlaying()) {
         if(!m_timer->isActive()) {
             m_timer->start();
         }

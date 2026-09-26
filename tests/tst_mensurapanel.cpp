@@ -7,6 +7,7 @@
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
+#include <QLineEdit>
 #include <QPushButton>
 #include <QSlider>
 #include <QSignalSpy>
@@ -43,6 +44,8 @@ private slots:
     void tapButtonTaps();
     void tapKeyWorksFromSpinBoxes();
     void timerRunsOnlyWhileVisibleAndPlaying();
+    void timerStopsWhenMinimised();
+    void refreshKeepsTypedInput();
     void warningFollowsNodeMissing();
     void indicatorShowsCurrentBeat();
     void indicatorClampsBeatCount();
@@ -260,6 +263,43 @@ void TestMensuraPanel::indicatorClampsBeatCount()
     QCOMPARE(indicator.currentBeat(), -1);
     indicator.setBeatCount(0);
     QCOMPARE(indicator.beatCount(), 1);
+}
+
+void TestMensuraPanel::timerStopsWhenMinimised()
+{
+    SharedState state;
+    MensuraController controller{state};
+    MensuraPanel panel{&controller};
+    auto* timer = panel.findChild<QTimer*>();
+    controller.handlePlayStateChanged(true, 0);
+    panel.show();
+    QVERIFY(QTest::qWaitForWindowExposed(&panel));
+    QVERIFY(timer->isActive());
+
+    panel.showMinimized(); // spontaneous hide: isVisible() stays true
+    QTRY_VERIFY(!timer->isActive());
+
+    panel.showNormal();
+    QTRY_VERIFY(timer->isActive());
+}
+
+void TestMensuraPanel::refreshKeepsTypedInput()
+{
+    SharedState state;
+    MensuraController controller{state};
+    const MensuraPanel panel{&controller};
+
+    for(const QString& name : {u"bpm"_s, u"offset"_s}) {
+        auto* edit = child<QAbstractSpinBox>(panel, name)->findChild<QLineEdit*>();
+        QVERIFY(edit);
+        edit->selectAll();
+        QTest::keyClicks(edit, u"9"_s); // not committed: keyboard tracking is off
+        const QString typed = edit->text();
+
+        controller.setEnabled(!controller.config().enabled); // stateChanged -> refresh, values unchanged
+
+        QCOMPARE(edit->text(), typed);
+    }
 }
 
 QTEST_MAIN(TestMensuraPanel)

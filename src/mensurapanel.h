@@ -54,5 +54,6 @@ private:
     QPushButton* m_resetPhase;
     QLabel* m_warning;
     QTimer* m_timer;
+    bool m_shown{false}; // isVisible() stays true while minimised
 };
 } // namespace Fooyin::Mensura
