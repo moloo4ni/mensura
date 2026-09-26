@@ -60,6 +60,13 @@ private slots:
     void heartbeatIgnoredWhenDisabled();
     void configChangedOnlyOnRealChange();
     void volumeConvertsToGain();
+    void trackChangeRestartsHeartbeatGrace();
+    void seekRestartsHeartbeatGrace();
+    void heartbeatGraceAfterResume();
+    void invalidModeIgnored();
+    void tapInManualWithTagSetsTempo();
+    void tapSeriesLongerThanBar();
+    void tapTempoUsesLastEightIntervals();
 };
 
 void TestMensuraController::publishesOnConstruction()
@@ -332,6 +339,121 @@ void TestMensuraController::volumeConvertsToGain()
     QVERIFY(std::abs(published(state).gain - 0.1) < 1e-12);
     controller.setVolumeDb(10.0);
     QCOMPARE(controller.config().volumeDb, 0.0);
+}
+
+void TestMensuraController::trackChangeRestartsHeartbeatGrace()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.setEnabled(true);
+    controller.handlePlayStateChanged(true, 0);
+    state.heartbeat(500 * Ms); // healthy, then the pipeline stalls
+
+    constexpr int64_t T = 10'000 * Ms;
+    controller.handleTrackChanged(std::nullopt, T);
+    controller.checkHeartbeat(T + 900 * Ms);
+    QCOMPARE(controller.nodeMissing(), false);
+    controller.checkHeartbeat(T + 1100 * Ms);
+    QCOMPARE(controller.nodeMissing(), true);
+}
+
+void TestMensuraController::seekRestartsHeartbeatGrace()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.setEnabled(true);
+    controller.handlePlayStateChanged(true, 0);
+    state.heartbeat(500 * Ms);
+
+    constexpr int64_t T = 10'000 * Ms;
+    controller.handleSeek(60'000, T);
+    controller.checkHeartbeat(T + 900 * Ms);
+    QCOMPARE(controller.nodeMissing(), false);
+    controller.checkHeartbeat(T + 1100 * Ms);
+    QCOMPARE(controller.nodeMissing(), true);
+}
+
+void TestMensuraController::heartbeatGraceAfterResume()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.setEnabled(true);
+    controller.handlePlayStateChanged(true, 0);
+    state.heartbeat(100 * Ms);
+    controller.handlePlayStateChanged(false, 200 * Ms);
+
+    constexpr int64_t T = 60'000 * Ms;
+    controller.handlePlayStateChanged(true, T);
+    controller.checkHeartbeat(T + 500 * Ms);
+    QCOMPARE(controller.nodeMissing(), false);
+}
+
+void TestMensuraController::invalidModeIgnored()
+{
+    SharedState state;
+    MensuraController controller{state};
+    QSignalSpy spy{&controller, &MensuraController::configChanged};
+    const uint64_t revision = state.revision();
+
+    controller.setMode(static_cast<BpmMode>(7));
+
+    QCOMPARE(controller.config().mode, BpmMode::Auto);
+    QCOMPARE(spy.count(), 0);
+    QCOMPARE(state.revision(), revision);
+}
+
+void TestMensuraController::tapInManualWithTagSetsTempo()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.handleTrackChanged(150.0, 0);
+    controller.setMode(BpmMode::Manual);
+    controller.handlePlayStateChanged(true, 0);
+
+    tapAt(controller, {10000, 10600});
+
+    QCOMPARE(controller.config().mode, BpmMode::Manual);
+    QCOMPARE(controller.config().manualBpm, 100.0);
+    QCOMPARE(controller.tempo().bpm, 100.0);
+    QCOMPARE(controller.phaseNs(), int64_t{10'000'000'000});
+    QCOMPARE(published(state).bpm, 100.0);
+}
+
+void TestMensuraController::tapSeriesLongerThanBar()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.setMode(BpmMode::Manual);
+    startPlaying(controller);
+
+    tapAt(controller, {10000, 10500, 11000, 11500, 12000});
+
+    const MensuraParams params = published(state);
+    QCOMPARE(params.bpm, 120.0);
+    const BeatGrid grid{params.bpm, params.phaseNs, params.beatsPerBar};
+    const int64_t lastBeat = grid.beatAtOrBefore(12'000'000'000);
+    QCOMPARE(grid.beatTimeNs(lastBeat), 12'000'000'000.0);
+    QCOMPARE(grid.indexInBar(lastBeat), 0); // (5 - 1) mod 4
+}
+
+void TestMensuraController::tapTempoUsesLastEightIntervals()
+{
+    SharedState state;
+    MensuraController controller{state};
+    controller.setMode(BpmMode::Manual);
+    startPlaying(controller);
+
+    // One 1000 ms interval followed by eight 500 ms intervals
+    tapAt(controller, {10000, 11000, 11500, 12000, 12500, 13000, 13500, 14000, 14500, 15000});
+
+    QCOMPARE(controller.config().manualBpm, 120.0);
+    // Last tap is beat index 9 of the series
+    QCOMPARE(controller.phaseNs(), int64_t{10'500'000'000});
+    const MensuraParams params = published(state);
+    const BeatGrid grid{params.bpm, params.phaseNs, params.beatsPerBar};
+    const int64_t lastBeat = grid.beatAtOrBefore(15'000'000'000);
+    QCOMPARE(grid.beatTimeNs(lastBeat), 15'000'000'000.0);
+    QCOMPARE(grid.indexInBar(lastBeat), 1); // 9 mod 4
 }
 
 QTEST_GUILESS_MAIN(TestMensuraController)

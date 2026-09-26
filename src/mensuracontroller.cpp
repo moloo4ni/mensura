@@ -34,6 +34,9 @@ void MensuraController::setEnabled(bool enabled)
 
 void MensuraController::setMode(BpmMode mode)
 {
+    if(static_cast<int>(mode) >= BpmModeCount) {
+        return;
+    }
     MensuraConfig next = m_config;
     next.mode          = mode;
     updateConfig(next);
@@ -129,6 +132,7 @@ void MensuraController::handleTrackChanged(std::optional<double> tagBpm, int64_t
     m_tapPhaseNs = 0;
     m_tap.reset();
     m_clock.setPosition(0, nowNs);
+    m_playStartNs = nowNs; // the pipeline may be refilled: restart the heartbeat grace period
 
     MensuraConfig next  = m_config;
     next.phaseOffsetMs = 0;
@@ -166,6 +170,7 @@ void MensuraController::handleSeek(uint64_t positionMs, int64_t nowNs)
 {
     m_clock.setPosition(positionMs, nowNs);
     m_tap.reset();
+    m_playStartNs = nowNs; // the pipeline may be refilled: restart the heartbeat grace period
 }
 
 void MensuraController::checkHeartbeat(int64_t nowNs)
