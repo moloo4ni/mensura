@@ -15,8 +15,11 @@
 #include <utils/settings/settingsmanager.h>
 
 #include <QAction>
+#include <QCoreApplication>
+#include <QLocale>
 #include <QLoggingCategory>
 #include <QTimer>
+#include <QTranslator>
 
 Q_LOGGING_CATEGORY(MENSURA, "fy.mensura")
 
@@ -70,6 +73,11 @@ void MensuraPlugin::initialise(const CorePluginContext& context)
 
 void MensuraPlugin::initialise(const GuiPluginContext& context)
 {
+    auto* translator = new QTranslator(this);
+    if(translator->load(QLocale{}, u"mensura"_s, u"_"_s, u":/i18n"_s)) {
+        QCoreApplication::installTranslator(translator);
+    }
+
     auto* action = new QAction(tr("&Mensura"), this);
     connect(action, &QAction::triggered, this, &MensuraPlugin::showWindow);
 

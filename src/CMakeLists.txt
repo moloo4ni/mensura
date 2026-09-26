@@ -38,3 +38,10 @@ create_fooyin_plugin(
     SOURCES mensuraplugin.cpp mensuraplugin.h mensurawindow.cpp mensurawindow.h
 )
 install(TARGETS mensura LIBRARY DESTINATION ${MENSURA_PLUGIN_DIR})
+
+qt_add_translations(
+    mensura
+    SOURCE_TARGETS mensura mensura_gui
+    TS_FILES i18n/mensura_ru.ts
+    RESOURCE_PREFIX /i18n
+)
