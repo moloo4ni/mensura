@@ -6,6 +6,7 @@ target_sources(mensura_logic PRIVATE sharedstate.cpp sharedstate.h)
 target_sources(mensura_logic PRIVATE temporesolver.cpp temporesolver.h)
 target_sources(mensura_logic PRIVATE taptempo.cpp taptempo.h positionclock.cpp positionclock.h)
 target_sources(mensura_logic PRIVATE mensuraconfig.cpp mensuraconfig.h)
+target_sources(mensura_logic PRIVATE mensuracontroller.cpp mensuracontroller.h)
 set_target_properties(
     mensura_logic
     PROPERTIES POSITION_INDEPENDENT_CODE ON
