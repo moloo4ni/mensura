@@ -11,7 +11,9 @@ using namespace Qt::StringLiterals;
 namespace Fooyin::Mensura {
 std::optional<double> parseBpmTag(const QString& text)
 {
-    static const QRegularExpression number{uR"((\d+(?:[.,]\d+)?))"_s};
+    // A minus counts as a sign only when it does not follow a letter or digit,
+    // so "-120" is negative but "BPM-128" is 128.
+    static const QRegularExpression number{uR"(((?:(?<!\w)-)?\d+(?:[.,]\d+)?))"_s};
 
     const auto match = number.match(text);
     if(!match.hasMatch()) {

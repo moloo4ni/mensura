@@ -34,6 +34,9 @@ void TestTempoResolver::parsesTag_data()
     QTest::newRow("too high") << u"1000"_s << true << 300.0;
     QTest::newRow("too low") << u"5"_s << true << 20.0;
     QTest::newRow("zero") << u"0"_s << false << 0.0;
+    QTest::newRow("negative") << u"-120"_s << false << 0.0;
+    QTest::newRow("negative after space") << u"BPM -120"_s << false << 0.0;
+    QTest::newRow("hyphen separator") << u"BPM-128"_s << true << 128.0;
     QTest::newRow("letters") << u"abc"_s << false << 0.0;
     QTest::newRow("empty") << QString{} << false << 0.0;
 }
@@ -56,6 +59,10 @@ void TestTempoResolver::readsTrackTag()
     Track tagged;
     tagged.addExtraTag(u"BPM"_s, QStringList{u"abc"_s, u"96"_s});
     QCOMPARE(trackBpm(tagged), std::optional<double>{96.0});
+
+    Track lowercase;
+    lowercase.addExtraTag(u"bpm"_s, QStringList{u"110"_s});
+    QCOMPARE(trackBpm(lowercase), std::optional<double>{110.0});
 
     const Track untagged;
     QVERIFY(!trackBpm(untagged).has_value());
