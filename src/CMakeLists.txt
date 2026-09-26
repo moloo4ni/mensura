@@ -3,6 +3,7 @@ target_sources(mensura_logic PRIVATE mensuradsp.cpp mensuradsp.h)
 target_sources(mensura_logic PRIVATE mensuraparams.h beatgrid.cpp beatgrid.h)
 target_sources(mensura_logic PRIVATE clicksynth.cpp clicksynth.h)
 target_sources(mensura_logic PRIVATE sharedstate.cpp sharedstate.h)
+target_sources(mensura_logic PRIVATE temporesolver.cpp temporesolver.h)
 set_target_properties(
     mensura_logic
     PROPERTIES POSITION_INDEPENDENT_CODE ON
