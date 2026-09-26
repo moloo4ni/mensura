@@ -22,6 +22,32 @@ std::optional<double> number(const QVariantMap& map, const QString& key)
     return value;
 }
 
+//! Accepts a bool, the numbers 0/1, or the strings true/false/1/0 (case-insensitive, trimmed).
+std::optional<bool> flag(const QVariantMap& map, const QString& key)
+{
+    const auto it = map.constFind(key);
+    if(it == map.cend()) {
+        return {};
+    }
+    if(it->typeId() == QMetaType::Bool) {
+        return it->toBool();
+    }
+    if(it->typeId() == QMetaType::QString) {
+        const QString text = it->toString().trimmed();
+        if(text.compare(u"true"_s, Qt::CaseInsensitive) == 0 || text == u"1"_s) {
+            return true;
+        }
+        if(text.compare(u"false"_s, Qt::CaseInsensitive) == 0 || text == u"0"_s) {
+            return false;
+        }
+        return {};
+    }
+    if(const auto value = number(map, key); value && (*value == 0.0 || *value == 1.0)) {
+        return *value == 1.0;
+    }
+    return {};
+}
+
 int clampedInt(double value, int min, int max)
 {
     return static_cast<int>(std::lround(std::clamp(value, static_cast<double>(min), static_cast<double>(max))));
@@ -51,10 +77,10 @@ MensuraConfig MensuraConfig::fromMap(const QVariantMap& map)
 {
     MensuraConfig config;
 
-    if(const auto it = map.constFind(u"Enabled"_s); it != map.cend() && it->canConvert<bool>()) {
-        config.enabled = it->toBool();
+    if(const auto enabled = flag(map, u"Enabled"_s)) {
+        config.enabled = *enabled;
     }
-    if(const auto mode = number(map, u"Mode"_s); mode && isIndex(*mode, 2)) {
+    if(const auto mode = number(map, u"Mode"_s); mode && isIndex(*mode, BpmModeCount)) {
         config.mode = static_cast<BpmMode>(static_cast<int>(*mode));
     }
     if(const auto bpm = number(map, u"ManualBpm"_s)) {

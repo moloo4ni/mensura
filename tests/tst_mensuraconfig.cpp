@@ -19,6 +19,10 @@ private slots:
     void parsesStrings();
     void garbageFallsBack();
     void convertsDecibels();
+    void parsesEnabledStrictly_data();
+    void parsesEnabledStrictly();
+    void nonFiniteFallsBack();
+    void roundTripsThroughStrings();
 };
 
 void TestMensuraConfig::defaultsMatchSpec()
@@ -101,6 +105,65 @@ void TestMensuraConfig::convertsDecibels()
     QCOMPARE(dbToGain(0.0), 1.0);
     QVERIFY(std::abs(dbToGain(-6.0) - 0.501187) < 1e-6);
     QVERIFY(std::abs(dbToGain(-40.0) - 0.01) < 1e-12);
+}
+
+void TestMensuraConfig::parsesEnabledStrictly_data()
+{
+    QTest::addColumn<QVariant>("value");
+    QTest::addColumn<bool>("expected");
+
+    QTest::newRow("abc") << QVariant{u"abc"_s} << false;
+    QTest::newRow("no") << QVariant{u"no"_s} << false;
+    QTest::newRow("empty") << QVariant{QString{}} << false;
+    QTest::newRow("2") << QVariant{2} << false;
+    QTest::newRow("0.5") << QVariant{0.5} << false;
+    QTest::newRow("nan") << QVariant{qQNaN()} << false;
+    QTest::newRow("list") << QVariant{QVariantList{}} << false;
+    QTest::newRow("false-string") << QVariant{u" False "_s} << false;
+    QTest::newRow("0-string") << QVariant{u"0"_s} << false;
+    QTest::newRow("TRUE") << QVariant{u"TRUE"_s} << true;
+    QTest::newRow("1-string") << QVariant{u"1"_s} << true;
+    QTest::newRow("padded-true") << QVariant{u" true "_s} << true;
+    QTest::newRow("1") << QVariant{1} << true;
+    QTest::newRow("1.0") << QVariant{1.0} << true;
+    QTest::newRow("bool-true") << QVariant{true} << true;
+}
+
+void TestMensuraConfig::parsesEnabledStrictly()
+{
+    QFETCH(QVariant, value);
+    QFETCH(bool, expected);
+    QCOMPARE(MensuraConfig::fromMap({{u"Enabled"_s, value}}).enabled, expected);
+}
+
+void TestMensuraConfig::nonFiniteFallsBack()
+{
+    const MensuraConfig config = MensuraConfig::fromMap({{u"ManualBpm"_s, qQNaN()},
+                                                         {u"BeatsPerBar"_s, qInf()},
+                                                         {u"VolumeDb"_s, qInf()},
+                                                         {u"PhaseOffsetMs"_s, -qInf()},
+                                                         {u"Mode"_s, qQNaN()},
+                                                         {u"Sound"_s, qInf()}});
+    QVERIFY(config == MensuraConfig{});
+}
+
+void TestMensuraConfig::roundTripsThroughStrings()
+{
+    MensuraConfig config;
+    config.enabled       = true;
+    config.mode          = BpmMode::Manual;
+    config.manualBpm     = 97.5;
+    config.beatsPerBar   = 7;
+    config.sound         = ClickSound::Wood;
+    config.volumeDb      = -18.0;
+    config.phaseOffsetMs = -120;
+
+    QVariantMap map = config.toMap();
+    for(auto it = map.begin(); it != map.end(); ++it) {
+        *it = it->toString();
+        QCOMPARE(it->typeId(), QMetaType::QString);
+    }
+    QVERIFY(MensuraConfig::fromMap(map) == config);
 }
 
 QTEST_GUILESS_MAIN(TestMensuraConfig)

@@ -15,6 +15,7 @@ enum class BpmMode : uint8_t
     Auto = 0, // tag if present, otherwise the manual value
     Manual,
 };
+inline constexpr int BpmModeCount = 2;
 
 enum class BpmSource : uint8_t
 {
