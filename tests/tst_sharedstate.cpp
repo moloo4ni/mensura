@@ -16,6 +16,7 @@ MensuraParams paramsFor(int64_t i)
     params.bpm         = 20.0 + static_cast<double>(i % 281);
     params.beatsPerBar = 1 + static_cast<int>(i % 16);
     params.sound       = static_cast<ClickSound>(i % 3);
+    params.accent      = static_cast<AccentMode>(i % 3);
     params.gain        = static_cast<double>(i % 101) / 100.0;
     params.phaseNs     = i;
     return params;
@@ -30,6 +31,7 @@ private slots:
     void defaultsAreDisabled();
     void publishThenRead();
     void invalidSoundFallsBackToClick();
+    void invalidAccentFallsBackToPitch();
     void heartbeatRoundTrips();
     void nowIsMonotonic();
     void concurrentSnapshotsAreConsistent();
@@ -68,6 +70,18 @@ void TestSharedState::invalidSoundFallsBackToClick()
     MensuraParams read;
     QVERIFY(state.tryRead(read));
     QCOMPARE(read.sound, ClickSound::Click);
+}
+
+void TestSharedState::invalidAccentFallsBackToPitch()
+{
+    SharedState state;
+    MensuraParams published;
+    published.accent = static_cast<AccentMode>(9);
+    state.publish(published);
+
+    MensuraParams read;
+    QVERIFY(state.tryRead(read));
+    QCOMPARE(read.accent, AccentMode::Pitch);
 }
 
 void TestSharedState::heartbeatRoundTrips()

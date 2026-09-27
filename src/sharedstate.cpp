@@ -21,6 +21,7 @@ void SharedState::publish(const MensuraParams& params)
     m_bpm.store(params.bpm, Relaxed);
     m_beatsPerBar.store(params.beatsPerBar, Relaxed);
     m_sound.store(static_cast<uint8_t>(params.sound), Relaxed);
+    m_accent.store(static_cast<uint8_t>(params.accent), Relaxed);
     m_gain.store(params.gain, Relaxed);
     m_phaseNs.store(params.phaseNs, Relaxed);
 
@@ -43,6 +44,8 @@ bool SharedState::tryRead(MensuraParams& out) const
         params.beatsPerBar = m_beatsPerBar.load(Relaxed);
         const uint8_t sound = m_sound.load(Relaxed);
         params.sound   = sound < ClickSoundCount ? static_cast<ClickSound>(sound) : ClickSound::Click;
+        const uint8_t accent = m_accent.load(Relaxed);
+        params.accent = accent < AccentModeCount ? static_cast<AccentMode>(accent) : AccentMode::Pitch;
         params.gain    = m_gain.load(Relaxed);
         params.phaseNs = m_phaseNs.load(Relaxed);
 

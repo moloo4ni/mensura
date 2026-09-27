@@ -121,9 +121,13 @@ void MensuraDsp::processBuffer(ProcessingBuffer& buffer)
             const auto local = static_cast<int>(beatFrame - firstFrame);
             mixTail(samples, channels, cursor, local);
 
-            const bool accent = m_params.beatsPerBar > 1 && grid.indexInBar(beat) == 0;
-            m_tail            = m_synth->click(m_params.sound, accent);
-            m_tailPos         = 0;
+            const bool hasBar   = m_params.beatsPerBar > 1;
+            const bool downbeat = hasBar && grid.indexInBar(beat) == 0;
+            const bool accent   = downbeat && m_params.accent != AccentMode::None;
+            const bool lowered  = hasBar && !downbeat && m_params.accent == AccentMode::PitchAndVolume;
+            m_tail              = m_synth->click(m_params.sound, accent);
+            m_tailPos           = 0;
+            m_tailLevel         = lowered ? UnaccentedLevel : 1.0;
             cursor            = local;
         }
     }
@@ -164,11 +168,12 @@ void MensuraDsp::resetTimeline()
     m_frameCursor = 0;
     m_tail        = {};
     m_tailPos     = 0;
+    m_tailLevel   = 1.0;
 }
 
 void MensuraDsp::mixTail(std::span<double> samples, int channels, int fromFrame, int toFrame)
 {
-    const double gain = m_params.gain;
+    const double gain = m_params.gain * m_tailLevel;
     for(int frame = fromFrame; frame < toFrame && m_tailPos < m_tail.size(); ++frame, ++m_tailPos) {
         const double click = m_tail[m_tailPos] * gain;
         double* out        = samples.data() + static_cast<size_t>(frame) * static_cast<size_t>(channels);

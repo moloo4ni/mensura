@@ -20,6 +20,7 @@ struct MensuraConfig
     double manualBpm{DefaultBpm};
     int beatsPerBar{4};
     ClickSound sound{ClickSound::Click};
+    AccentMode accent{AccentMode::Pitch};
     double volumeDb{DefaultVolumeDb};
     int phaseOffsetMs{0};
 

@@ -38,6 +38,7 @@ private:
     std::atomic<double> m_bpm{DefaultBpm};
     std::atomic<int> m_beatsPerBar{4};
     std::atomic<uint8_t> m_sound{0};
+    std::atomic<uint8_t> m_accent{static_cast<uint8_t>(AccentMode::Pitch)};
     std::atomic<double> m_gain{0.5};
     std::atomic<int64_t> m_phaseNs{0};
     std::atomic<int64_t> m_heartbeatNs{0};

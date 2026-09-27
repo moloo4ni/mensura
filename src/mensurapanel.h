@@ -48,6 +48,7 @@ private:
     BeatIndicator* m_indicator;
     QSpinBox* m_beats;
     QComboBox* m_sound;
+    QComboBox* m_accent;
     QSlider* m_volume;
     QLabel* m_volumeLabel;
     QSpinBox* m_offset;

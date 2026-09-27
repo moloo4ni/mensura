@@ -42,6 +42,7 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     , m_indicator{new BeatIndicator(this)}
     , m_beats{new QSpinBox(this)}
     , m_sound{new QComboBox(this)}
+    , m_accent{new QComboBox(this)}
     , m_volume{new QSlider(Qt::Horizontal, this)}
     , m_volumeLabel{new QLabel(this)}
     , m_offset{new QSpinBox(this)}
@@ -57,6 +58,7 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_indicator->setObjectName(u"indicator"_s);
     m_beats->setObjectName(u"beats"_s);
     m_sound->setObjectName(u"sound"_s);
+    m_accent->setObjectName(u"accent"_s);
     m_volume->setObjectName(u"volume"_s);
     m_volumeLabel->setObjectName(u"volumeLabel"_s);
     m_offset->setObjectName(u"offset"_s);
@@ -93,6 +95,10 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_sound->addItem(tr("Mechanical"));
     m_sound->addItem(tr("Clave"));
 
+    m_accent->addItem(tr("None")); // AccentMode order
+    m_accent->addItem(tr("Pitch"));
+    m_accent->addItem(tr("Pitch and volume"));
+
     m_volume->setRange(static_cast<int>(MensuraConfig::MinVolumeDb), static_cast<int>(MensuraConfig::MaxVolumeDb));
 
     m_offset->setRange(-MensuraConfig::MaxPhaseOffsetMs, MensuraConfig::MaxPhaseOffsetMs);
@@ -121,6 +127,7 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     auto* form = new QFormLayout();
     form->addRow(tr("Beats per bar:"), m_beats);
     form->addRow(tr("Sound:"), m_sound);
+    form->addRow(tr("Accent:"), m_accent);
     form->addRow(tr("Volume:"), volumeRow);
     form->addRow(tr("Phase offset:"), offsetRow);
 
@@ -141,6 +148,8 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     connect(m_beats, &QSpinBox::valueChanged, m_controller, &MensuraController::setBeatsPerBar);
     connect(m_sound, &QComboBox::currentIndexChanged, this,
             [this](int index) { m_controller->setSound(static_cast<ClickSound>(index)); });
+    connect(m_accent, &QComboBox::currentIndexChanged, this,
+            [this](int index) { m_controller->setAccent(static_cast<AccentMode>(index)); });
     connect(m_volume, &QSlider::valueChanged, this, [this](int db) { m_controller->setVolumeDb(db); });
     connect(m_offset, &QSpinBox::valueChanged, m_controller, &MensuraController::setPhaseOffsetMs);
     connect(m_resetPhase, &QPushButton::clicked, m_controller, &MensuraController::resetPhase);
@@ -173,6 +182,7 @@ void MensuraPanel::refresh()
     const QSignalBlocker modeBlocker{m_mode};
     const QSignalBlocker beatsBlocker{m_beats};
     const QSignalBlocker soundBlocker{m_sound};
+    const QSignalBlocker accentBlocker{m_accent};
     const QSignalBlocker volumeBlocker{m_volume};
     const QSignalBlocker offsetBlocker{m_offset};
 
@@ -194,6 +204,7 @@ void MensuraPanel::refresh()
         m_beats->setValue(config.beatsPerBar);
     }
     m_sound->setCurrentIndex(static_cast<int>(config.sound));
+    m_accent->setCurrentIndex(static_cast<int>(config.accent));
 
     const auto volumeDb = static_cast<int>(std::lround(config.volumeDb));
     m_volume->setValue(volumeDb);

@@ -68,6 +68,17 @@ void MensuraController::setSound(ClickSound sound)
     updateConfig(next);
 }
 
+void MensuraController::setAccent(AccentMode accent)
+{
+    const auto index = static_cast<int>(accent);
+    if(index < 0 || index >= AccentModeCount) {
+        return;
+    }
+    MensuraConfig next = m_config;
+    next.accent        = accent;
+    updateConfig(next);
+}
+
 void MensuraController::setVolumeDb(double db)
 {
     if(!std::isfinite(db)) {
@@ -189,6 +200,7 @@ MensuraParams MensuraController::params() const
             .bpm         = tempo().bpm,
             .beatsPerBar = m_config.beatsPerBar,
             .sound       = m_config.sound,
+            .accent      = m_config.accent,
             .gain        = dbToGain(m_config.volumeDb),
             .phaseNs     = phaseNs()};
 }

@@ -118,6 +118,9 @@ void TestMensuraPanel::controlsDriveController()
     child<QComboBox>(panel, u"sound"_s)->setCurrentIndex(2);
     QCOMPARE(controller.config().sound, ClickSound::Beep);
 
+    child<QComboBox>(panel, u"accent"_s)->setCurrentIndex(2);
+    QCOMPARE(controller.config().accent, AccentMode::PitchAndVolume);
+
     child<QSlider>(panel, u"volume"_s)->setValue(-20);
     QCOMPARE(controller.config().volumeDb, -20.0);
     QCOMPARE(child<QLabel>(panel, u"volumeLabel"_s)->text(), u"-20 dB"_s);

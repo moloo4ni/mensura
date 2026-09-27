@@ -36,6 +36,7 @@ public:
     void setManualBpm(double bpm);
     void setBeatsPerBar(int beats);
     void setSound(ClickSound sound);
+    void setAccent(AccentMode accent);
     void setVolumeDb(double db);
     void setPhaseOffsetMs(int offsetMs);
 

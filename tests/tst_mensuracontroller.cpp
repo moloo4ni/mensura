@@ -319,13 +319,17 @@ void TestMensuraController::configChangedOnlyOnRealChange()
 
     controller.setBeatsPerBar(4); // default: no change
     controller.setSound(static_cast<ClickSound>(9));
+    controller.setAccent(AccentMode::Pitch); // default: no change
+    controller.setAccent(static_cast<AccentMode>(9));
     QCOMPARE(spy.count(), 0);
 
     controller.setBeatsPerBar(40);
     QCOMPARE(controller.config().beatsPerBar, 16);
     controller.setSound(ClickSound::Beep);
     controller.setEnabled(true);
-    QCOMPARE(spy.count(), 3);
+    controller.setAccent(AccentMode::None);
+    QCOMPARE(spy.count(), 4);
+    QCOMPARE(published(state).accent, AccentMode::None);
     QCOMPARE(published(state).beatsPerBar, 16);
     QCOMPARE(published(state).sound, ClickSound::Beep);
     QCOMPARE(published(state).enabled, true);

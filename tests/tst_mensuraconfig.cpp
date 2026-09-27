@@ -46,6 +46,7 @@ void TestMensuraConfig::roundTrips()
     config.manualBpm     = 97.5;
     config.beatsPerBar   = 7;
     config.sound         = ClickSound::Beep;
+    config.accent        = AccentMode::PitchAndVolume;
     config.volumeDb      = -18.0;
     config.phaseOffsetMs = -120;
 
@@ -84,6 +85,8 @@ void TestMensuraConfig::invalidEnumsFallBack()
     QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 1.5}}).sound, ClickSound::Click);
     QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 5}}).sound, ClickSound::Click);
     QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 4}}).sound, ClickSound::Clave); // the last sound
+    QCOMPARE(MensuraConfig::fromMap({{u"Accent"_s, 3}}).accent, AccentMode::Pitch);
+    QCOMPARE(MensuraConfig::fromMap({{u"Accent"_s, 0}}).accent, AccentMode::None);
 }
 
 void TestMensuraConfig::parsesStrings()
@@ -157,6 +160,7 @@ void TestMensuraConfig::roundTripsThroughStrings()
     config.manualBpm     = 97.5;
     config.beatsPerBar   = 7;
     config.sound         = ClickSound::Wood;
+    config.accent        = AccentMode::PitchAndVolume;
     config.volumeDb      = -18.0;
     config.phaseOffsetMs = -120;
 

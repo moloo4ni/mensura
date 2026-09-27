@@ -68,6 +68,7 @@ QVariantMap MensuraConfig::toMap() const
         {u"ManualBpm"_s, manualBpm},
         {u"BeatsPerBar"_s, beatsPerBar},
         {u"Sound"_s, static_cast<int>(sound)},
+        {u"Accent"_s, static_cast<int>(accent)},
         {u"VolumeDb"_s, volumeDb},
         {u"PhaseOffsetMs"_s, phaseOffsetMs},
     };
@@ -91,6 +92,9 @@ MensuraConfig MensuraConfig::fromMap(const QVariantMap& map)
     }
     if(const auto sound = number(map, u"Sound"_s); sound && isIndex(*sound, ClickSoundCount)) {
         config.sound = static_cast<ClickSound>(static_cast<int>(*sound));
+    }
+    if(const auto accent = number(map, u"Accent"_s); accent && isIndex(*accent, AccentModeCount)) {
+        config.accent = static_cast<AccentMode>(static_cast<int>(*accent));
     }
     if(const auto volume = number(map, u"VolumeDb"_s)) {
         config.volumeDb = std::clamp(*volume, MinVolumeDb, MaxVolumeDb);

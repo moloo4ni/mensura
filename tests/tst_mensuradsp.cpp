@@ -114,6 +114,9 @@ private slots:
     void resetDropsTail();
     void accentOnlyOnDownbeat();
     void singleBeatBarHasNoAccent();
+    void accentOffPlaysEveryBeatAlike();
+    void volumeAccentLowersOtherBeats();
+    void volumeAccentWithoutBarKeepsFullLevel();
     void heartbeatUpdatedOnProcess();
     void mixesIntoEveryChannel();
     void softClipBoundsOutput();
@@ -271,6 +274,54 @@ void TestMensuraDsp::singleBeatBarHasNoAccent()
     const ClickSynth synth{Rate};
     QVERIFY(hasClickAt(out, 1, 0, synth.click(ClickSound::Wood, false), 0.5));
     QVERIFY(hasClickAt(out, 1, 24000, synth.click(ClickSound::Wood, false), 0.5));
+}
+
+void TestMensuraDsp::accentOffPlaysEveryBeatAlike()
+{
+    SharedState state;
+    MensuraParams params = enabledParams();
+    params.accent        = AccentMode::None;
+    state.publish(params);
+
+    MensuraDsp dsp{state};
+    dsp.prepare(AudioFormat{SampleFormat::F64, Rate, 1});
+    const auto out = run(dsp, std::vector<double>(Rate, 0.0), 1, 0);
+
+    const ClickSynth synth{Rate};
+    QVERIFY(hasClickAt(out, 1, 0, synth.click(ClickSound::Click, false), 0.5));
+    QVERIFY(hasClickAt(out, 1, 24000, synth.click(ClickSound::Click, false), 0.5));
+}
+
+void TestMensuraDsp::volumeAccentLowersOtherBeats()
+{
+    SharedState state;
+    MensuraParams params = enabledParams();
+    params.accent        = AccentMode::PitchAndVolume;
+    state.publish(params);
+
+    MensuraDsp dsp{state};
+    dsp.prepare(AudioFormat{SampleFormat::F64, Rate, 1});
+    const auto out = run(dsp, std::vector<double>(Rate, 0.0), 1, 0);
+
+    const ClickSynth synth{Rate};
+    QVERIFY(hasClickAt(out, 1, 0, synth.click(ClickSound::Click, true), 0.5));
+    QVERIFY(hasClickAt(out, 1, 24000, synth.click(ClickSound::Click, false), 0.5 * MensuraDsp::UnaccentedLevel));
+}
+
+void TestMensuraDsp::volumeAccentWithoutBarKeepsFullLevel()
+{
+    SharedState state;
+    MensuraParams params = enabledParams();
+    params.accent        = AccentMode::PitchAndVolume;
+    params.beatsPerBar   = 1; // no downbeat to stand out, so nothing is lowered
+    state.publish(params);
+
+    MensuraDsp dsp{state};
+    dsp.prepare(AudioFormat{SampleFormat::F64, Rate, 1});
+    const auto out = run(dsp, std::vector<double>(Rate, 0.0), 1, 0);
+
+    const ClickSynth synth{Rate};
+    QVERIFY(hasClickAt(out, 1, 24000, synth.click(ClickSound::Click, false), 0.5));
 }
 
 void TestMensuraDsp::heartbeatUpdatedOnProcess()

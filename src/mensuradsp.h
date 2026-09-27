@@ -26,6 +26,8 @@ public:
     static constexpr auto Id = "fooyin.dsp.mensura";
     //! Re-anchor the timeline when a buffer starts further than this from where we expect it.
     static constexpr int64_t ResyncThresholdNs = 5'000'000;
+    //! Level of the other beats with AccentMode::PitchAndVolume: the downbeat stands out by 6 dB.
+    static constexpr double UnaccentedLevel = 0.5;
 
     MensuraDsp();
     explicit MensuraDsp(SharedState& state);
@@ -61,5 +63,6 @@ private:
 
     std::span<const double> m_tail; // click currently sounding
     size_t m_tailPos{0};
+    double m_tailLevel{1.0}; // fixed for the whole click, so it never jumps mid-click
 };
 } // namespace Fooyin::Mensura
