@@ -90,6 +90,8 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_sound->addItem(tr("Click")); // ClickSound order
     m_sound->addItem(tr("Wood"));
     m_sound->addItem(tr("Beep"));
+    m_sound->addItem(tr("Mechanical"));
+    m_sound->addItem(tr("Clave"));
 
     m_volume->setRange(static_cast<int>(MensuraConfig::MinVolumeDb), static_cast<int>(MensuraConfig::MaxVolumeDb));
 

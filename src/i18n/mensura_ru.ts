@@ -49,47 +49,57 @@
         <translation>Бип</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="116"/>
+        <location filename="../mensurapanel.cpp" line="93"/>
+        <source>Mechanical</source>
+        <translation>Механический</translation>
+    </message>
+    <message>
+        <location filename="../mensurapanel.cpp" line="94"/>
+        <source>Clave</source>
+        <translation>Клаве</translation>
+    </message>
+    <message>
+        <location filename="../mensurapanel.cpp" line="118"/>
         <source>ms</source>
         <translation>мс</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="107"/>
+        <location filename="../mensurapanel.cpp" line="109"/>
         <source>Mode:</source>
         <translation>Режим:</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="120"/>
+        <location filename="../mensurapanel.cpp" line="122"/>
         <source>Beats per bar:</source>
         <translation>Долей в такте:</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="121"/>
+        <location filename="../mensurapanel.cpp" line="123"/>
         <source>Sound:</source>
         <translation>Звук:</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="122"/>
+        <location filename="../mensurapanel.cpp" line="124"/>
         <source>Volume:</source>
         <translation>Громкость:</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="123"/>
+        <location filename="../mensurapanel.cpp" line="125"/>
         <source>Phase offset:</source>
         <translation>Смещение фазы:</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="188"/>
+        <location filename="../mensurapanel.cpp" line="190"/>
         <source>tag</source>
         <translation>тег</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="188"/>
+        <location filename="../mensurapanel.cpp" line="190"/>
         <source>manual</source>
         <translation>ручной</translation>
     </message>
     <message>
-        <location filename="../mensurapanel.cpp" line="198"/>
+        <location filename="../mensurapanel.cpp" line="200"/>
         <source>%1 dB</source>
         <translation>%1 дБ</translation>
     </message>

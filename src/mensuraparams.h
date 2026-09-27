@@ -17,8 +17,10 @@ enum class ClickSound : uint8_t
     Click = 0,
     Wood,
     Beep,
+    Mechanical,
+    Clave,
 };
-inline constexpr int ClickSoundCount = 3;
+inline constexpr int ClickSoundCount = 5;
 
 //! Non-finite values fall back to the default tempo.
 [[nodiscard]] inline double clampBpm(double bpm)
