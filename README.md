@@ -55,3 +55,8 @@ If the window shows a warning that Mensura is not in the DSP chain, add the node
 - Put Mensura first in the per-track chain, before any tempo, speed or resampling DSP. After such a DSP the audio
   no longer matches the track time, and the clicks may come out cut off.
 - There is no beat detection: without a BPM tag, set the tempo and phase by hand or with TAP.
+
+## License
+
+Mensura is free software, licensed under the GNU General Public License v3.0 or later
+(GPL-3.0-or-later), the same as fooyin. See [LICENSE](LICENSE).
