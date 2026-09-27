@@ -163,7 +163,7 @@ std::vector<double> synthesise(const Voice& voice, int sampleRate, bool accent)
     }
 
     if(peak > 0.0) {
-        const double scale = (accent ? ClickSynth::AccentPeak : ClickSynth::NormalPeak) / peak;
+        const double scale = ClickSynth::Peak / peak;
         for(double& sample : samples) {
             sample *= scale;
         }

@@ -35,7 +35,7 @@ The plugin is installed to `~/.local/lib/fooyin/plugins/fyplugin_mensura.so`
   series is the downbeat and the grid passes through your last tap. With a manual tempo, two or more taps
   also set the tempo (mean of the last 8 intervals); with a tag tempo only the phase moves. A pause of
   more than 2 s starts a new series.
-- **Beats per bar** — 1–16; the first beat is accented (higher and louder). 1 = no accent.
+- **Beats per bar** — 1–16; the first beat is accented (higher pitched, same volume). 1 = no accent.
 - **Sound** — Click, Wood, Beep, Mechanical or Clave. **Volume** — −40…0 dB.
 - **Phase offset** — fine-tune the grid by ±1000 ms; **Reset** clears the offset and the tapped phase.
   Changing the track also resets the phase.

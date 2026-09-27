@@ -83,8 +83,8 @@ void TestClickSynth::peaksAreNormalised()
 {
     const ClickSynth synth{48000};
     for(const auto sound : AllSounds) {
-        QVERIFY(std::abs(peak(synth.click(sound, false)) - ClickSynth::NormalPeak) < 1e-9);
-        QVERIFY(std::abs(peak(synth.click(sound, true)) - ClickSynth::AccentPeak) < 1e-9);
+        QVERIFY(std::abs(peak(synth.click(sound, false)) - ClickSynth::Peak) < 1e-9);
+        QVERIFY(std::abs(peak(synth.click(sound, true)) - ClickSynth::Peak) < 1e-9); // same level as a normal beat
     }
 }
 

@@ -11,8 +11,9 @@ namespace Fooyin::Mensura {
 class ClickSynth
 {
 public:
-    static constexpr double NormalPeak  = 0.5;
-    static constexpr double AccentPeak  = 1.0; // +6 dB over a normal beat
+    // Every beat has the same peak; the accent differs only in pitch. Below the DSP clip knee (0.9),
+    // so a click at 0 dB never gets shaped on silence.
+    static constexpr double Peak        = 0.7;
     static constexpr double AccentPitch = 1.5;
 
     explicit ClickSynth(int sampleRate);
