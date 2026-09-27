@@ -46,6 +46,7 @@ private slots:
     void timerRunsOnlyWhileVisibleAndPlaying();
     void timerStopsWhenMinimised();
     void refreshKeepsTypedInput();
+    void typingFromFieldStartReplacesValue();
     void warningFollowsNodeMissing();
     void indicatorShowsCurrentBeat();
     void indicatorClampsBeatCount();
@@ -300,6 +301,26 @@ void TestMensuraPanel::refreshKeepsTypedInput()
 
         QCOMPARE(edit->text(), typed);
     }
+}
+
+void TestMensuraPanel::typingFromFieldStartReplacesValue()
+{
+    SharedState state;
+    MensuraController controller{state};
+    const MensuraPanel panel{&controller};
+
+    // A mouse drag from the left edge that stops inside the number: a prefix or suffix inside
+    // the field would make the selection overlap it, and QAbstractSpinBox then drops the input
+    for(const QString& name : {u"bpm"_s, u"offset"_s}) {
+        auto* edit = child<QAbstractSpinBox>(panel, name)->findChild<QLineEdit*>();
+        QVERIFY(edit);
+        edit->setSelection(0, 3);
+        QTest::keyClicks(edit, u"90"_s);
+        QTest::keyClick(edit, Qt::Key_Return);
+    }
+
+    QCOMPARE(controller.config().manualBpm, 90.0);
+    QCOMPARE(controller.config().phaseOffsetMs, 90);
 }
 
 QTEST_MAIN(TestMensuraPanel)

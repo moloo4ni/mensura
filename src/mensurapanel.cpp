@@ -67,7 +67,6 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_bpm->setDecimals(1);
     m_bpm->setSingleStep(1.0);
     m_bpm->setKeyboardTracking(false);
-    m_bpm->setPrefix(u"♩ "_s);
     QFont bpmFont = m_bpm->font();
     if(bpmFont.pointSizeF() > 0) {
         bpmFont.setPointSizeF(bpmFont.pointSizeF() * 1.5);
@@ -76,6 +75,10 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
         bpmFont.setPixelSize(bpmFont.pixelSize() * 3 / 2);
     }
     m_bpm->setFont(bpmFont);
+    // The note and the unit are labels, not a spin box prefix/suffix: a selection that overlaps
+    // an affix makes QAbstractSpinBox reject the typed text
+    auto* note = new QLabel(u"♩"_s, this);
+    note->setFont(bpmFont);
 
     m_mode->addItem(tr("Auto"));   // BpmMode::Auto
     m_mode->addItem(tr("Manual")); // BpmMode::Manual
@@ -91,13 +94,13 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_volume->setRange(static_cast<int>(MensuraConfig::MinVolumeDb), static_cast<int>(MensuraConfig::MaxVolumeDb));
 
     m_offset->setRange(-MensuraConfig::MaxPhaseOffsetMs, MensuraConfig::MaxPhaseOffsetMs);
-    m_offset->setSuffix(tr(" ms"));
     m_offset->setKeyboardTracking(false);
 
     m_warning->setWordWrap(true);
     m_warning->hide();
 
     auto* tempoRow = new QHBoxLayout();
+    tempoRow->addWidget(note);
     tempoRow->addWidget(m_bpm, 1);
     tempoRow->addWidget(m_source);
     tempoRow->addSpacing(12);
@@ -110,6 +113,7 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
 
     auto* offsetRow = new QHBoxLayout();
     offsetRow->addWidget(m_offset, 1);
+    offsetRow->addWidget(new QLabel(tr("ms"), this));
     offsetRow->addWidget(m_resetPhase);
 
     auto* form = new QFormLayout();
