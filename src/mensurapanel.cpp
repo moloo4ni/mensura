@@ -77,10 +77,6 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
         bpmFont.setPixelSize(bpmFont.pixelSize() * 3 / 2);
     }
     m_bpm->setFont(bpmFont);
-    // The note and the unit are labels, not a spin box prefix/suffix: a selection that overlaps
-    // an affix makes QAbstractSpinBox reject the typed text
-    auto* note = new QLabel(u"♩"_s, this);
-    note->setFont(bpmFont);
 
     m_mode->addItem(tr("Auto"));   // BpmMode::Auto
     m_mode->addItem(tr("Manual")); // BpmMode::Manual
@@ -108,7 +104,6 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_warning->hide();
 
     auto* tempoRow = new QHBoxLayout();
-    tempoRow->addWidget(note);
     tempoRow->addWidget(m_bpm, 1);
     tempoRow->addWidget(m_source);
     tempoRow->addSpacing(12);
@@ -121,6 +116,8 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
 
     auto* offsetRow = new QHBoxLayout();
     offsetRow->addWidget(m_offset, 1);
+    // The unit is a label, not a spin box suffix: a selection that overlaps an affix makes
+    // QAbstractSpinBox reject the typed text
     offsetRow->addWidget(new QLabel(tr("ms"), this));
     offsetRow->addWidget(m_resetPhase);
 
@@ -154,12 +151,17 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     connect(m_offset, &QSpinBox::valueChanged, m_controller, &MensuraController::setPhaseOffsetMs);
     connect(m_resetPhase, &QPushButton::clicked, m_controller, &MensuraController::resetPhase);
 
+    // The wheel changes a value only in a focused control, so scrolling past one changes nothing
+    for(QWidget* control : std::initializer_list<QWidget*>{m_bpm, m_mode, m_beats, m_sound, m_accent, m_volume, m_offset}) {
+        control->setFocusPolicy(Qt::StrongFocus);
+        control->installEventFilter(this);
+    }
+
     auto* tapShortcut = new QShortcut(QKeySequence{Qt::Key_T}, this);
     tapShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     tapShortcut->setAutoRepeat(false);
     // Spin boxes claim printable keys as shortcut overrides; T is never valid input there
-    m_bpm->installEventFilter(this);
-    m_offset->installEventFilter(this);
+    // (handled in eventFilter, installed above)
     connect(tapShortcut, &QShortcut::activated, this, &MensuraPanel::tap);
 
     connect(m_controller, &MensuraController::stateChanged, this, &MensuraPanel::refresh);
@@ -232,7 +234,13 @@ void MensuraPanel::updateIndicator(int64_t nowNs)
 
 bool MensuraPanel::eventFilter(QObject* watched, QEvent* event)
 {
-    if(event->type() == QEvent::ShortcutOverride) {
+    if(event->type() == QEvent::Wheel) {
+        const auto* control = qobject_cast<QWidget*>(watched);
+        if(control && !control->hasFocus()) {
+            return true; // swallowed: the control keeps its value
+        }
+    }
+    if(event->type() == QEvent::ShortcutOverride && (watched == m_bpm || watched == m_offset)) {
         const auto* keyEvent = static_cast<QKeyEvent*>(event);
         if(keyEvent->key() == Qt::Key_T && keyEvent->modifiers() == Qt::NoModifier) {
             event->ignore(); // not claimed by the spin box, so the T shortcut fires

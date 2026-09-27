@@ -3,6 +3,7 @@
 #include "mensurapanel.h"
 #include "sharedstate.h"
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
@@ -14,6 +15,7 @@
 #include <QSpinBox>
 #include <QTest>
 #include <QTimer>
+#include <QWheelEvent>
 
 #include <cstdlib>
 
@@ -47,6 +49,7 @@ private slots:
     void timerStopsWhenMinimised();
     void refreshKeepsTypedInput();
     void typingFromFieldStartReplacesValue();
+    void wheelChangesOnlyFocusedControls();
     void warningFollowsNodeMissing();
     void indicatorShowsCurrentBeat();
     void indicatorClampsBeatCount();
@@ -324,6 +327,37 @@ void TestMensuraPanel::typingFromFieldStartReplacesValue()
 
     QCOMPARE(controller.config().manualBpm, 90.0);
     QCOMPARE(controller.config().phaseOffsetMs, 90);
+}
+
+void TestMensuraPanel::wheelChangesOnlyFocusedControls()
+{
+    SharedState state;
+    MensuraController controller{state};
+    MensuraPanel panel{&controller};
+    panel.show();
+    panel.activateWindow();
+    QVERIFY(QTest::qWaitForWindowActive(&panel));
+
+    const auto wheelUp = [](QWidget* widget) {
+        const QPointF centre = QRectF{widget->rect()}.center();
+        QWheelEvent event{centre, widget->mapToGlobal(centre), QPoint{}, QPoint{0, 120}, Qt::NoButton,
+                          Qt::NoModifier, Qt::NoScrollPhase, false};
+        QApplication::sendEvent(widget, &event);
+    };
+
+    auto* beats = child<QSpinBox>(panel, u"beats"_s);
+    auto* sound = child<QComboBox>(panel, u"sound"_s);
+    child<QPushButton>(panel, u"resetPhase"_s)->setFocus();
+
+    wheelUp(beats);
+    wheelUp(sound);
+    QCOMPARE(controller.config().beatsPerBar, 4);
+    QCOMPARE(sound->currentIndex(), 0);
+
+    beats->setFocus();
+    QVERIFY(beats->hasFocus());
+    wheelUp(beats);
+    QCOMPARE(controller.config().beatsPerBar, 5);
 }
 
 QTEST_MAIN(TestMensuraPanel)

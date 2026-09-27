@@ -7,6 +7,19 @@
 #include <algorithm>
 
 namespace Fooyin::Mensura {
+namespace {
+// Unlit beats: this share of the text colour over the window colour. QPalette::Mid is nearly
+// invisible on dark themes; a blend stays visible on both dark and light ones.
+constexpr double UnlitTextShare = 0.3;
+
+QColor blend(const QColor& from, const QColor& to, double share)
+{
+    return QColor::fromRgbF(static_cast<float>(from.redF() + (to.redF() - from.redF()) * share),
+                            static_cast<float>(from.greenF() + (to.greenF() - from.greenF()) * share),
+                            static_cast<float>(from.blueF() + (to.blueF() - from.blueF()) * share));
+}
+} // namespace
+
 BeatIndicator::BeatIndicator(QWidget* parent)
     : QWidget{parent}
 {
@@ -66,8 +79,10 @@ void BeatIndicator::paintEvent(QPaintEvent* /*event*/)
     const double slot   = area.width() / m_count;
     const double centre = area.center().y();
 
+    const QColor unlit = blend(palette().color(QPalette::Window), palette().color(QPalette::WindowText), UnlitTextShare);
+
     for(int beat = 0; beat < m_count; ++beat) {
-        QColor colour = palette().color(QPalette::Mid);
+        QColor colour = unlit;
         if(beat == m_current) {
             colour = (beat == 0 && m_count > 1) ? palette().color(QPalette::Highlight)
                                                 : palette().color(QPalette::WindowText);
