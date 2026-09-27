@@ -145,12 +145,9 @@ void MensuraController::handleTrackChanged(std::optional<double> tagBpm, int64_t
     m_clock.setPosition(0, nowNs);
     m_playStartNs = nowNs; // the pipeline may be refilled: restart the heartbeat grace period
 
-    MensuraConfig next  = m_config;
-    next.phaseOffsetMs = 0;
-    if(!updateConfig(next)) {
-        publish();
-        emit stateChanged();
-    }
+    // The phase offset is a standing correction (e.g. output latency), so it is kept
+    publish();
+    emit stateChanged();
 }
 
 void MensuraController::handleTrackUpdated(std::optional<double> tagBpm)

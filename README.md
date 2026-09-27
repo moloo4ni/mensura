@@ -29,7 +29,7 @@ The plugin is installed to `~/.local/lib/fooyin/plugins/fyplugin_mensura.so`
 ## Controls
 
 - **Enable metronome** — on/off. Clicks only sound while a track is playing.
-- **♩ BPM** — in **Auto** mode the track's `BPM` tag is used when present (label "tag"), otherwise the
+- **BPM** — in **Auto** mode the track's `BPM` tag is used when present (label "tag"), otherwise the
   manual value (label "manual"). Editing the value switches to **Manual**.
 - **TAP** (or the `T` key while the window has focus) — tap along with the music. The first tap of a
   series is the downbeat and the grid passes through your last tap. With a manual tempo, two or more taps
@@ -39,8 +39,10 @@ The plugin is installed to `~/.local/lib/fooyin/plugins/fyplugin_mensura.so`
 - **Accent** — how the first beat stands out: None, Pitch (higher pitched, same volume) or Pitch and volume
   (higher pitched, and the other beats are 6 dB quieter).
 - **Sound** — Click, Wood, Beep, Mechanical or Clave. **Volume** — −40…0 dB.
-- **Phase offset** — fine-tune the grid by ±1000 ms; **Reset** clears the offset and the tapped phase.
-  Changing the track also resets the phase.
+- **Phase offset** — a standing correction of ±1000 ms (for example, for output latency). It is kept across
+  track changes and restarts. Changing the track resets only the tapped phase; **Reset** clears both.
+
+The mouse wheel changes a value only in a focused control, so scrolling over the window changes nothing.
 
 If the window shows a warning that Mensura is not in the DSP chain, add the node as described above.
 

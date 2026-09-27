@@ -46,7 +46,7 @@ class TestMensuraController : public QObject
 private slots:
     void publishesOnConstruction();
     void loadConfigDoesNotEmitConfigChanged();
-    void trackChangeResetsPhaseAndUsesTag();
+    void trackChangeResetsTapPhaseKeepsOffsetAndUsesTag();
     void manualBpmSwitchesToManual();
     void trackUpdateRecomputesTempo();
     void tapSetsManualTempoAndPhase();
@@ -100,7 +100,7 @@ void TestMensuraController::loadConfigDoesNotEmitConfigChanged()
     QCOMPARE(published(state).bpm, 300.0);
 }
 
-void TestMensuraController::trackChangeResetsPhaseAndUsesTag()
+void TestMensuraController::trackChangeResetsTapPhaseKeepsOffsetAndUsesTag()
 {
     SharedState state;
     MensuraController controller{state};
@@ -109,14 +109,16 @@ void TestMensuraController::trackChangeResetsPhaseAndUsesTag()
     controller.setPhaseOffsetMs(200);
     QCOMPARE(controller.phaseNs(), int64_t{3'200'000'000});
 
+    QSignalSpy configSpy{&controller, &MensuraController::configChanged};
     controller.handleTrackChanged(140.0, 5000 * Ms);
 
-    QCOMPARE(controller.phaseNs(), int64_t{0});
-    QCOMPARE(controller.config().phaseOffsetMs, 0);
+    QCOMPARE(controller.phaseNs(), int64_t{200'000'000}); // only the offset remains
+    QCOMPARE(controller.config().phaseOffsetMs, 200);
+    QCOMPARE(configSpy.count(), 0);
     QCOMPARE(controller.tempo().bpm, 140.0);
     QCOMPARE(controller.tempo().source, BpmSource::Tag);
     QCOMPARE(published(state).bpm, 140.0);
-    QCOMPARE(published(state).phaseNs, int64_t{0});
+    QCOMPARE(published(state).phaseNs, int64_t{200'000'000});
     QCOMPARE(controller.positionMs(5000 * Ms), 0.0);
 }
 
