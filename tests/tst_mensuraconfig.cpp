@@ -83,8 +83,8 @@ void TestMensuraConfig::invalidEnumsFallBack()
     QCOMPARE(config.sound, ClickSound::Click);
 
     QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 1.5}}).sound, ClickSound::Click);
-    QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 5}}).sound, ClickSound::Click);
-    QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 4}}).sound, ClickSound::Clave); // the last sound
+    QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 4}}).sound, ClickSound::Click); // was Clave, removed
+    QCOMPARE(MensuraConfig::fromMap({{u"Sound"_s, 3}}).sound, ClickSound::Mechanical); // the last sound
     QCOMPARE(MensuraConfig::fromMap({{u"Accent"_s, 3}}).accent, AccentMode::Pitch);
     QCOMPARE(MensuraConfig::fromMap({{u"Accent"_s, 0}}).accent, AccentMode::None);
 }

@@ -38,7 +38,7 @@ The plugin is installed to `~/.local/lib/fooyin/plugins/fyplugin_mensura.so`
 - **Beats per bar** — 1–16. 1 = no accent.
 - **Accent** — how the first beat stands out: None, Pitch (higher pitched, same volume) or Pitch and volume
   (higher pitched, and the other beats are 6 dB quieter).
-- **Sound** — Click, Wood, Beep, Mechanical or Clave. **Volume** — −40…0 dB.
+- **Sound** — Click, Wood, Beep or Mechanical. **Volume** — −40…0 dB.
 - **Phase offset** — a standing correction of ±1000 ms (for example, for output latency). It is kept across
   track changes and restarts. Changing the track resets only the tapped phase; **Reset** clears both.
 

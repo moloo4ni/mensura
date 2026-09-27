@@ -8,8 +8,7 @@
 using namespace Fooyin::Mensura;
 
 namespace {
-constexpr std::array AllSounds{ClickSound::Click, ClickSound::Wood, ClickSound::Beep, ClickSound::Mechanical,
-                               ClickSound::Clave};
+constexpr std::array AllSounds{ClickSound::Click, ClickSound::Wood, ClickSound::Beep, ClickSound::Mechanical};
 
 double peak(std::span<const double> samples)
 {
@@ -57,7 +56,6 @@ void TestClickSynth::lengthsMatchVoices()
         QCOMPARE(synth.click(ClickSound::Wood, accent).size(), size_t{2880});
         QCOMPARE(synth.click(ClickSound::Beep, accent).size(), size_t{2880});
         QCOMPARE(synth.click(ClickSound::Mechanical, accent).size(), size_t{2160});
-        QCOMPARE(synth.click(ClickSound::Clave, accent).size(), size_t{2880});
     }
 }
 

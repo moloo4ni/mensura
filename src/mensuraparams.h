@@ -18,9 +18,8 @@ enum class ClickSound : uint8_t
     Wood,
     Beep,
     Mechanical,
-    Clave,
 };
-inline constexpr int ClickSoundCount = 5;
+inline constexpr int ClickSoundCount = 4;
 
 //! How the first beat of a bar stands out.
 enum class AccentMode : uint8_t

@@ -55,11 +55,6 @@ constexpr std::array<Voice, ClickSoundCount> Voices{{
      .partials = {{{1600.0, 0.6, 20.0}, {4100.0, 0.4, 10.0}, {7300.0, 0.2, 4.0}}},
      .noise    = {.amplitude = 1.0, .centreHz = 3500.0, .decayMs = 6.0},
      .drive    = 4.0},
-    // Clave: ringing hardwood tone
-    {.lengthMs = 60.0,
-     .partials = {{{2500.0, 1.0, 35.0}, {6000.0, 0.15, 10.0}, {}}},
-     .noise    = {.amplitude = 0.3, .centreHz = 5000.0, .decayMs = 2.0},
-     .drive    = 2.0},
 }};
 
 size_t msToFrames(double ms, int sampleRate)

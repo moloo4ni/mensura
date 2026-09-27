@@ -89,7 +89,6 @@ MensuraPanel::MensuraPanel(MensuraController* controller, QWidget* parent)
     m_sound->addItem(tr("Wood"));
     m_sound->addItem(tr("Beep"));
     m_sound->addItem(tr("Mechanical"));
-    m_sound->addItem(tr("Clave"));
 
     m_accent->addItem(tr("None")); // AccentMode order
     m_accent->addItem(tr("Pitch"));
