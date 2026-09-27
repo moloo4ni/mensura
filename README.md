@@ -8,6 +8,19 @@ track, in time with its BPM tag or a tempo you set yourself.
 - fooyin 0.13.1 with development headers (Arch: `fooyin`)
 - Qt 6, CMake ≥ 3.19, a C++23 compiler
 
+## Install a release build
+
+Each [release](https://github.com/moloo4ni/mensura/releases) has a prebuilt `fyplugin_mensura.so` for x86_64 Linux.
+It is built on Arch Linux against fooyin 0.13.1 and Qt 6.11. For other fooyin or Qt versions, build from source.
+
+```sh
+tar -xzf mensura-1.0.0-x86_64.tar.gz
+mkdir -p ~/.local/lib/fooyin/plugins
+cp mensura-1.0.0-x86_64/fyplugin_mensura.so ~/.local/lib/fooyin/plugins/
+```
+
+Restart fooyin afterwards.
+
 ## Build and install
 
 ```sh
