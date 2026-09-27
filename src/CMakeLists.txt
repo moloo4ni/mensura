@@ -1,0 +1,47 @@
+add_library(mensura_logic STATIC)
+target_sources(mensura_logic PRIVATE mensuradsp.cpp mensuradsp.h)
+target_sources(mensura_logic PRIVATE mensuraparams.h beatgrid.cpp beatgrid.h)
+target_sources(mensura_logic PRIVATE clicksynth.cpp clicksynth.h)
+target_sources(mensura_logic PRIVATE sharedstate.cpp sharedstate.h)
+target_sources(mensura_logic PRIVATE temporesolver.cpp temporesolver.h)
+target_sources(mensura_logic PRIVATE taptempo.cpp taptempo.h positionclock.cpp positionclock.h)
+target_sources(mensura_logic PRIVATE mensuraconfig.cpp mensuraconfig.h)
+target_sources(mensura_logic PRIVATE mensuracontroller.cpp mensuracontroller.h)
+set_target_properties(
+    mensura_logic
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+               AUTOMOC ON
+               CXX_VISIBILITY_PRESET hidden
+               VISIBILITY_INLINES_HIDDEN ON
+)
+target_include_directories(mensura_logic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(mensura_logic PUBLIC Fooyin::Core Qt6::Core)
+target_compile_definitions(mensura_logic PUBLIC QT_USE_QSTRINGBUILDER)
+target_compile_options(mensura_logic PRIVATE -Wall -Wextra)
+
+add_library(mensura_gui STATIC)
+target_sources(mensura_gui PRIVATE beatindicator.cpp beatindicator.h mensurapanel.cpp mensurapanel.h)
+set_target_properties(
+    mensura_gui
+    PROPERTIES POSITION_INDEPENDENT_CODE ON
+               AUTOMOC ON
+               CXX_VISIBILITY_PRESET hidden
+               VISIBILITY_INLINES_HIDDEN ON
+)
+target_link_libraries(mensura_gui PUBLIC mensura_logic Qt6::Widgets)
+target_compile_options(mensura_gui PRIVATE -Wall -Wextra)
+
+create_fooyin_plugin(
+    mensura
+    NO_INSTALL
+    DEPENDS mensura_logic mensura_gui Fooyin::Core Fooyin::Gui Fooyin::Utils
+    SOURCES mensuraplugin.cpp mensuraplugin.h mensurawindow.cpp mensurawindow.h
+)
+install(TARGETS mensura LIBRARY DESTINATION ${MENSURA_PLUGIN_DIR})
+
+qt_add_translations(
+    mensura
+    SOURCE_TARGETS mensura mensura_gui
+    TS_FILES i18n/mensura_ru.ts
+    RESOURCE_PREFIX /i18n
+)

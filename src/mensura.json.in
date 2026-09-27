@@ -1,0 +1,7 @@
+{
+    "Name": "Mensura",
+    "Version": "@PROJECT_VERSION@",
+    "Author": "moloo4ni",
+    "Category": "Audio.DSP",
+    "Description": "Metronome clicks mixed into the playing track"
+}
